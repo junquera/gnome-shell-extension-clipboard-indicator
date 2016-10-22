@@ -108,6 +108,22 @@ const ClipboardIndicator = Lang.Class({
             // Add separator
             that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
+            /** Text entry **/
+            let box = new St.BoxLayout();
+            let searchField = new St.Entry({style_class: 'search-field',
+                                            name: 'searchField',
+                                            can_focus: true,
+                                            track_hover: true,
+                                            hint_text: _("Search")});
+
+
+            box.add(searchField);
+
+            let searchMenuItem = new PopupMenu.PopupBaseMenuItem;
+            searchMenuItem.actor.add_child(box);
+            that.menu.addMenuItem(searchMenuItem);
+            /** End Text entry **/
+
             // Private mode switch
             that.privateModeMenuItem = new PopupMenu.PopupSwitchMenuItem(
                 _("Private mode"), PRIVATEMODE, { reactive: true });
