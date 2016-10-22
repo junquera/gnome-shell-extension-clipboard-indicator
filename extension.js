@@ -108,21 +108,39 @@ const ClipboardIndicator = Lang.Class({
             // Add separator
             that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            /** Text entry **/
-            let box = new St.BoxLayout();
-            let searchField = new St.Entry({style_class: 'search-field',
-                                            name: 'searchField',
-                                            can_focus: true,
-                                            track_hover: true,
-                                            hint_text: _("Search")});
+/** Text entry **/
 
+            that.searchSection = new PopupMenu.PopupMenuSection();
+            that.searchEntry = new St.Entry({
+              style_class: 'search-entry',
+              name: 'searchEntry',
+              reactive: true,
+              can_focus: true,
+              track_hover: true,
+              hint_text: _("Search")
+            });
+            that.searchEntry.clutter_text.connect('activate', Lang.bind(that, that._onSearchIntro));
+            that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(actor, event){
+              let search = that.searchEntry.get_text();
+              that._showNotification(search);
+              //that._showNotification(that.clipItemsRadioGroup.clipContents);
 
-            box.add(searchField);
+              /*
+              if(search.length == 0){
+                that.clipItemsRadioGroup = that.backupItems;
+                that.backupItems = [];
+              } else {
+                if(that.backupItems.length == 0){
+                  that.backupItems = that.clipItemsRadioGroup;
+                }
+                that.clipItemsRadioGroup = that.clipItemsRadioGroup.filter((x)=> x.includes(search));
+              }*/
+            }));
+            that.searchSection.actor.add_actor(that.searchEntry);
 
-            let searchMenuItem = new PopupMenu.PopupBaseMenuItem;
-            searchMenuItem.actor.add_child(box);
-            that.menu.addMenuItem(searchMenuItem);
-            /** End Text entry **/
+            that.menu.addMenuItem(that.searchSection);
+
+/** End Text entry **/
 
             // Private mode switch
             that.privateModeMenuItem = new PopupMenu.PopupSwitchMenuItem(
@@ -146,6 +164,14 @@ const ClipboardIndicator = Lang.Class({
                 that._selectMenuItem(clipItemsArr[lastIdx]);
             }
         });
+    },
+
+    _onSearchIntro: function() {
+      this._showNotification(_("Busca!"));
+    },
+    _clearSearch: function() {
+      this._showNotification(_("Cerrado!"));
+      this.searchEntry.set_text("");
     },
 
     _setEntryLabel: function (menuItem) {
