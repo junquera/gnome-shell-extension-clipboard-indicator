@@ -22,5 +22,8 @@
 
 .search-entry {
   color: gray;
-  width: 300px;
+}
+
+.hidden-entry {
+  color: gray;
 }

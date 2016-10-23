@@ -108,7 +108,7 @@ const ClipboardIndicator = Lang.Class({
             // Add separator
             that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-/** Text entry **/
+            /** Text entry **/
 
             that.searchSection = new PopupMenu.PopupMenuSection();
             that.searchEntry = new St.Entry({
@@ -121,26 +121,34 @@ const ClipboardIndicator = Lang.Class({
             });
             that.searchEntry.clutter_text.connect('activate', Lang.bind(that, that._onSearchIntro));
             that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(actor, event){
+              // TODO Split search terms with " "
               let search = that.searchEntry.get_text();
-              that._showNotification(search);
-              //that._showNotification(that.clipItemsRadioGroup.clipContents);
-
-              /*
-              if(search.length == 0){
-                that.clipItemsRadioGroup = that.backupItems;
-                that.backupItems = [];
-              } else {
-                if(that.backupItems.length == 0){
-                  that.backupItems = that.clipItemsRadioGroup;
+              // that._showNotification(search);
+              that.clipItemsRadioGroup.forEach(function (item) {
+                let idx = that.clipItemsRadioGroup.indexOf(item);
+                if(search.length > 0){
+                  try{
+                    if(!item.clipContents.match("[.]*" + search + "[.]*")){
+                      item.actor.add_style_class_name("hidden-entry");
+                      item.actor.set_track_hover(false);
+                    } else {
+                      item.actor.remove_style_class_name("hidden-entry");
+                      item.actor.set_track_hover(true);
+                    }
+                  } catch(err){
+                    that._showNotification(err.message);
+                  }
+                } else {
+                  item.actor.remove_style_class_name("hidden-entry");
+                  item.actor.set_track_hover(true);
                 }
-                that.clipItemsRadioGroup = that.clipItemsRadioGroup.filter((x)=> x.includes(search));
-              }*/
+              });
             }));
             that.searchSection.actor.add_actor(that.searchEntry);
 
             that.menu.addMenuItem(that.searchSection);
 
-/** End Text entry **/
+            /** End Text entry **/
 
             // Private mode switch
             that.privateModeMenuItem = new PopupMenu.PopupSwitchMenuItem(
