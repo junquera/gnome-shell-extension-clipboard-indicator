@@ -121,19 +121,25 @@ const ClipboardIndicator = Lang.Class({
             });
             that.searchEntry.clutter_text.connect('activate', Lang.bind(that, that._onSearchIntro));
             that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(actor, event){
-              // TODO Split search terms with " "
-              let search = that.searchEntry.get_text();
-              // that._showNotification(search);
+
+              let terms = that.searchEntry.get_text().split(" ");
+              let search = new String();
+              terms.forEach(function(term){
+                if(term.length > 0)
+                  search += "[.]*$[.]*|".replace("$", term);
+              });
+              search = "(" + search.substring(0, search.length - 1) + ")";
+
               that.clipItemsRadioGroup.forEach(function (item) {
                 let idx = that.clipItemsRadioGroup.indexOf(item);
                 if(search.length > 0){
                   try{
-                    if(!item.clipContents.match("[.]*" + search + "[.]*")){
-                      item.actor.add_style_class_name("hidden-entry");
-                      item.actor.set_track_hover(false);
-                    } else {
+                    if(item.clipContents.match("[.]*" + search + "[.]*")){
                       item.actor.remove_style_class_name("hidden-entry");
                       item.actor.set_track_hover(true);
+                    } else {
+                      item.actor.add_style_class_name("hidden-entry");
+                      item.actor.set_track_hover(false);
                     }
                   } catch(err){
                     that._showNotification(err.message);
