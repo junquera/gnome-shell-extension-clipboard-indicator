@@ -105,11 +105,12 @@ const ClipboardIndicator = Lang.Class({
                 that._addEntry(buffer);
             });
 
-            // Add separator
-            that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
             /** Text entry **/
 
+            // TODO Clear search method
+            // TODO Clear search button
+            // TODO Entry style
+            // TODO Disable delete if hidden-entry
             that.searchSection = new PopupMenu.PopupMenuSection();
             that.searchEntry = new St.Entry({
               style_class: 'search-entry',
@@ -120,13 +121,13 @@ const ClipboardIndicator = Lang.Class({
               hint_text: _("Search")
             });
             that.searchEntry.clutter_text.connect('activate', Lang.bind(that, that._onSearchIntro));
-            that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(actor, event){
+            that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(){
 
               let terms = that.searchEntry.get_text().split(" ");
               let search = new String();
               terms.forEach(function(term){
                 if(term.length > 0)
-                  search += "[.]*$[.]*|".replace("$", term);
+                  search += "[.]*{0}[.]*|".replace("{0}", term);
               });
               search = "(" + search.substring(0, search.length - 1) + ")";
 
@@ -155,6 +156,9 @@ const ClipboardIndicator = Lang.Class({
             that.menu.addMenuItem(that.searchSection);
 
             /** End Text entry **/
+
+            // Add separator
+            that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             // Private mode switch
             that.privateModeMenuItem = new PopupMenu.PopupSwitchMenuItem(
@@ -418,6 +422,7 @@ const ClipboardIndicator = Lang.Class({
         PRIVATEMODE = this.privateModeMenuItem.state;
         // We hide the history in private mode because it will be out of sync (selected item will not reflect clipboard)
         this.scrollViewMenuSection.actor.visible = !PRIVATEMODE;
+        this.searchSection.actor.visible = !PRIVATEMODE;
 
         // If we get out of private mode then we restore the clipboard to old state
         if (!PRIVATEMODE) {
