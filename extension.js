@@ -107,54 +107,24 @@ const ClipboardIndicator = Lang.Class({
 
             /** Text entry **/
 
-            // TODO Clear search method
             // TODO Clear search button
-            // TODO Entry style
-            // TODO Disable delete if hidden-entry
-            that.searchSection = new PopupMenu.PopupMenuSection();
+            // TODO connect _clearSearch on close or clear search button pressed
+            // TODO Disable elements delete button if hidden-entry
+
+            that.searchField = new PopupMenu.PopupMenuSection();
             that.searchEntry = new St.Entry({
-              style_class: 'search-entry',
+              style_class: 'search-entry-field',
               name: 'searchEntry',
               reactive: true,
               can_focus: true,
               track_hover: true,
               hint_text: _("Search")
             });
-            that.searchEntry.clutter_text.connect('activate', Lang.bind(that, that._onSearchIntro));
-            that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, function(){
 
-              let terms = that.searchEntry.get_text().split(" ");
-              let search = new String();
-              terms.forEach(function(term){
-                if(term.length > 0)
-                  search += "[.]*{0}[.]*|".replace("{0}", term);
-              });
-              search = "(" + search.substring(0, search.length - 1) + ")";
+            that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, that._search));
 
-              that.clipItemsRadioGroup.forEach(function (item) {
-                let idx = that.clipItemsRadioGroup.indexOf(item);
-                if(search.length > 0){
-                  try{
-                    if(item.clipContents.match("[.]*" + search + "[.]*")){
-                      item.actor.remove_style_class_name("hidden-entry");
-                      item.actor.set_track_hover(true);
-                    } else {
-                      item.actor.add_style_class_name("hidden-entry");
-                      item.actor.set_track_hover(false);
-                    }
-                  } catch(err){
-                    that._showNotification(err.message);
-                  }
-                } else {
-                  item.actor.remove_style_class_name("hidden-entry");
-                  item.actor.set_track_hover(true);
-                }
-              });
-            }));
-            that.searchSection.actor.add_actor(that.searchEntry);
-
-            that.menu.addMenuItem(that.searchSection);
-
+            that.searchField.actor.add_child(that.searchEntry);
+            that.menu.addMenuItem(that.searchField);
             /** End Text entry **/
 
             // Add separator
@@ -184,11 +154,40 @@ const ClipboardIndicator = Lang.Class({
         });
     },
 
-    _onSearchIntro: function() {
-      this._showNotification(_("Busca!"));
+    _search:function(){
+      let that = this;
+      // Cleaning special regex chars
+      let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      let terms = searchEntry.split(" ");
+      let search = new String();
+      terms.forEach(function(term){
+        if(term.length > 0)
+          search += "[.]*{0}[.]*|".replace("{0}", term);
+      });
+      // TODO Clean regex chars
+      search = "(" + search.substring(0, search.length - 1) + ")";
+
+      that.clipItemsRadioGroup.forEach(function (item) {
+        let idx = that.clipItemsRadioGroup.indexOf(item);
+        if(search.length > 0){
+          try{
+            if(item.clipContents.match("[.]*" + search + "[.]*")){
+              item.actor.remove_style_class_name("hidden-entry");
+              item.actor.set_track_hover(true);
+            } else {
+              item.actor.add_style_class_name("hidden-entry");
+              item.actor.set_track_hover(false);
+            }
+          } catch(err){
+            that._showNotification(err.message);
+          }
+        } else {
+          item.actor.remove_style_class_name("hidden-entry");
+          item.actor.set_track_hover(true);
+        }
+      });
     },
     _clearSearch: function() {
-      this._showNotification(_("Cerrado!"));
       this.searchEntry.set_text("");
     },
 
@@ -422,7 +421,7 @@ const ClipboardIndicator = Lang.Class({
         PRIVATEMODE = this.privateModeMenuItem.state;
         // We hide the history in private mode because it will be out of sync (selected item will not reflect clipboard)
         this.scrollViewMenuSection.actor.visible = !PRIVATEMODE;
-        this.searchSection.actor.visible = !PRIVATEMODE;
+        this.searchField.actor.visible = !PRIVATEMODE;
 
         // If we get out of private mode then we restore the clipboard to old state
         if (!PRIVATEMODE) {
