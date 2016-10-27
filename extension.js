@@ -122,6 +122,7 @@ const ClipboardIndicator = Lang.Class({
             });
 
             that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, that._search));
+            that.menu.connect('open-state-changed', Lang.bind(that, that._clearSearch));
 
             that.searchField.actor.add_child(that.searchEntry);
             that.menu.addMenuItem(that.searchField);
@@ -157,14 +158,16 @@ const ClipboardIndicator = Lang.Class({
     _search:function(){
       let that = this;
       // Cleaning special regex chars
+      // let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
       let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
       let terms = searchEntry.split(" ");
       let search = new String();
       terms.forEach(function(term){
         if(term.length > 0)
           search += "[.]*{0}[.]*|".replace("{0}", term);
       });
-      // TODO Clean regex chars
+
       search = "(" + search.substring(0, search.length - 1) + ")";
 
       that.clipItemsRadioGroup.forEach(function (item) {
@@ -172,23 +175,28 @@ const ClipboardIndicator = Lang.Class({
         if(search.length > 0){
           try{
             if(item.clipContents.match("[.]*" + search + "[.]*")){
-              item.actor.remove_style_class_name("hidden-entry");
-              item.actor.set_track_hover(true);
+              that._setEntryEnabled(item, true);
             } else {
-              item.actor.add_style_class_name("hidden-entry");
-              item.actor.set_track_hover(false);
+              that._setEntryEnabled(item, false);
             }
           } catch(err){
             that._showNotification(err.message);
           }
         } else {
-          item.actor.remove_style_class_name("hidden-entry");
-          item.actor.set_track_hover(true);
+          that._setEntryEnabled(item, true);
         }
       });
     },
     _clearSearch: function() {
       this.searchEntry.set_text("");
+      this.clipItemsRadioGroup.forEach((item) => this._setEntryEnabled(item, true));
+    },
+    _setEntryEnabled: function(item, enabled){
+      item.actor.set_track_hover(enabled);
+      if(enabled)
+        item.actor.remove_style_class_name("hidden-entry");
+      else
+        item.actor.add_style_class_name("hidden-entry");
     },
 
     _setEntryLabel: function (menuItem) {
@@ -403,7 +411,7 @@ const ClipboardIndicator = Lang.Class({
         }
 
         notification.setTransient(true);
-        this._notifSource.notify(notification);      
+        this._notifSource.notify(notification);
     },
 
     _createHistoryLabel: function () {
