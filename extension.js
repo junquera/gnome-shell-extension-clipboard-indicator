@@ -108,7 +108,6 @@ const ClipboardIndicator = Lang.Class({
             /** Text entry **/
 
             // TODO Clear search button
-            // TODO connect _clearSearch on close or clear search button pressed
             // TODO Disable elements delete button if hidden-entry
 
             that.searchField = new PopupMenu.PopupMenuSection();
