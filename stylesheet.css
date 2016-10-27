@@ -20,11 +20,11 @@
     max-height:450px;
 }
 
-.search-entry {
+.search-entry-field {
   color: gray;
   margin: 10px 20px;
   height: 20px;
-  width: 80px;
+  width: 300px;
 }
 
 .hidden-entry {
