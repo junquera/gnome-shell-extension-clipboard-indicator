@@ -123,10 +123,10 @@ const ClipboardIndicator = Lang.Class({
             // that.searchEntry.clutter_text.connect('activate', Lang.bind(this, function(){}));
             that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, that._search));
             that.menu.connect('open-state-changed', Lang.bind(that, that._clearSearch));
-
             that.searchField.actor.add_child(that.searchEntry);
             that.menu.addMenuItem(that.searchField);
-            /** End Text entry **/
+            /** End Text entry **/            that.menu.connect('active', Lang.bind(that, function(){that._showNotification("Hola")}))
+
 
             // Add separator
             // that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -163,6 +163,13 @@ const ClipboardIndicator = Lang.Class({
 
       let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&").replace(/(^\s+|\s+$)/gi, '').replace(/\s+/gi, ' ');
       let search = "\(" + searchEntry + "|.*" + searchEntry.replace(/[\s]/g, '.*|.*') + ".*\)";
+
+      // if(searchEntry.length > 0) {
+      //   that.searchEntry.add_style_class_name('active');
+      // } else {
+      //   that.searchEntry.remove_style_class_name('active');
+      // }
+      
       that.clipItemsRadioGroup.forEach(function (item) {
         let idx = that.clipItemsRadioGroup.indexOf(item);
         if(search.length > 0){
