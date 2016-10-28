@@ -120,6 +120,7 @@ const ClipboardIndicator = Lang.Class({
               hint_text: _("Search")
             });
 
+            // that.searchEntry.clutter_text.connect('activate', Lang.bind(this, function(){}));
             that.searchEntry.clutter_text.connect('key-release-event', Lang.bind(that, that._search));
             that.menu.connect('open-state-changed', Lang.bind(that, that._clearSearch));
 
@@ -128,7 +129,7 @@ const ClipboardIndicator = Lang.Class({
             /** End Text entry **/
 
             // Add separator
-            that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            // that.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             // Private mode switch
             that.privateModeMenuItem = new PopupMenu.PopupSwitchMenuItem(
@@ -154,26 +155,19 @@ const ClipboardIndicator = Lang.Class({
         });
     },
 
+    _focusSearch: function(){
+      global.stage.set_key_focus(this.searchEntry);
+    },
     _search:function(){
       let that = this;
-      // Cleaning special regex chars
-      // let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-      let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
-      let terms = searchEntry.split(" ");
-      let search = new String();
-      terms.forEach(function(term){
-        if(term.length > 0)
-          search += "[.]*{0}[.]*|".replace("{0}", term);
-      });
-
-      search = "(" + search.substring(0, search.length - 1) + ")";
-
+      let searchEntry = that.searchEntry.get_text().replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&").replace(/(^\s+|\s+$)/gi, '').replace(/\s+/gi, ' ');
+      let search = "\(" + searchEntry + "|.*" + searchEntry.replace(/[\s]/g, '.*|.*') + ".*\)";
       that.clipItemsRadioGroup.forEach(function (item) {
         let idx = that.clipItemsRadioGroup.indexOf(item);
         if(search.length > 0){
           try{
-            if(item.clipContents.match("[.]*" + search + "[.]*")){
+            if(item.clipContents.match(search)){
               that._setEntryEnabled(item, true);
             } else {
               that._setEntryEnabled(item, false);
@@ -186,10 +180,13 @@ const ClipboardIndicator = Lang.Class({
         }
       });
     },
-    _clearSearch: function() {
+    _clearSearch: function(menu, open) {
       this.searchEntry.set_text("");
       this.clipItemsRadioGroup.forEach((item) => this._setEntryEnabled(item, true));
+      if(open)
+        this._focusSearch();
     },
+
     _setEntryEnabled: function(item, enabled){
       item.actor.set_track_hover(enabled);
       if(enabled)
