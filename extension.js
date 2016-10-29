@@ -109,7 +109,6 @@ const ClipboardIndicator = Lang.Class({
 
             // TODO Clear search button
             // TODO Disable elements delete button if hidden-entry
-
             that.searchField = new PopupMenu.PopupMenuSection();
             that.searchEntry = new St.Entry({
               style_class: 'search-entry-field',
@@ -169,7 +168,7 @@ const ClipboardIndicator = Lang.Class({
       // } else {
       //   that.searchEntry.remove_style_class_name('active');
       // }
-      
+
       that.clipItemsRadioGroup.forEach(function (item) {
         let idx = that.clipItemsRadioGroup.indexOf(item);
         if(search.length > 0){

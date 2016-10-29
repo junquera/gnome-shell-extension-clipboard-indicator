@@ -61,3 +61,7 @@ msgstr "Configuración"
 #: extension.js:187
 msgid "Clipboard history cleared"
 msgstr "Historial del portapapeles borrado"
+
+#: extension.js:112
+msgid "Search"
+msgstr "Buscar"
